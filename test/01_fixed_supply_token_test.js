@@ -61,7 +61,7 @@ contract('FixedSupplyToken', function(accounts) {
     var token;
     return fixedSupplyToken.deployed().then(function(instance){
       token = instance;
-      return token.getNameOfToken();
+      return token.getNameOfToken.call();
     }).then(function(result){
       assert.equal(result, "Example Fixed Supply Token", "incorrect name of token");
     });
@@ -70,7 +70,7 @@ contract('FixedSupplyToken', function(accounts) {
     var token;
     return fixedSupplyToken.deployed().then(function(instance){
       token = instance;
-      return token.getSymbolNameOfToken();
+      return token.getSymbolNameOfToken.call();
     }).then(function(result){
       assert.equal(result, "FIXED", "incorrect name of token");
     });
