@@ -57,4 +57,22 @@ contract('FixedSupplyToken', function(accounts) {
     "Amount wasn't correctly sent to the receiver");
   });
   });
+  it("should return correct name of token", function(){
+    var token;
+    return fixedSupplyToken.deployed().then(function(instance){
+      token = instance;
+      return token.getNameOfToken();
+    }).then(function(result){
+      assert.equal(result, "Example Fixed Supply Token", "incorrect name of token");
+    });
+  });
+  it("should return correct symbol name of token", function(){
+    var token;
+    return fixedSupplyToken.deployed().then(function(instance){
+      token = instance;
+      return token.getSymbolNameOfToken();
+    }).then(function(result){
+      assert.equal(result, "FIXED", "incorrect name of token");
+    });
+  });
 });

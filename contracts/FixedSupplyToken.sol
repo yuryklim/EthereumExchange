@@ -15,6 +15,8 @@ import "./SafeMath.sol";
 // ERC Token Standard #20 Interface
 // https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
 // ----------------------------------------------------------------------------
+
+
 contract ERC20Interface {
     function totalSupply() public constant returns (uint);
     function balanceOf(address tokenOwner) public constant returns (uint balance);
@@ -27,26 +29,37 @@ contract ERC20Interface {
 }
 // ----------------------------------------------------------------------------
 // Contract function to receive approval and execute function in one call
+
+
 // Borrowed from MiniMeToken
 // ----------------------------------------------------------------------------
+
+
 contract ApproveAndCallFallBack {
+
     function receiveApproval(address from, uint256 tokens, address token, bytes data) public;
 }
 // ----------------------------------------------------------------------------
 // ERC20 Token, with the addition of symbol, name and decimals and a
 // fixed supply
 // ----------------------------------------------------------------------------
+
+
 contract FixedSupplyToken is ERC20Interface, Owned {
+
     using SafeMath for uint;
+
     string public symbol;
     string public  name;
     uint8 public decimals;
     uint _totalSupply;
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
+
     constructor() public {
         symbol = "FIXED";
         name = "Example Fixed Supply Token";
@@ -56,22 +69,43 @@ contract FixedSupplyToken is ERC20Interface, Owned {
         emit Transfer(address(0), owner, _totalSupply);
     }
     // ------------------------------------------------------------------------
+    // Get name of token
+    // ------------------------------------------------------------------------
+
+    function getNameOfToken() public view returns (string) {
+        return name;
+    }
+
+    // ------------------------------------------------------------------------
+    // Get symbol name of token
+    // ------------------------------------------------------------------------
+
+    function getSymbolNameOfToken() public view returns (string) {
+        return symbol;
+    }
+
+    // ------------------------------------------------------------------------
     // Total supply
     // ------------------------------------------------------------------------
+
     function totalSupply() public view returns (uint) {
         return _totalSupply.sub(balances[address(0)]);
     }
+
     // ------------------------------------------------------------------------
     // Get the token balance for account `tokenOwner`
     // ------------------------------------------------------------------------
+
     function balanceOf(address tokenOwner) public view returns (uint balance) {
         return balances[tokenOwner];
     }
+
     // ------------------------------------------------------------------------
     // Transfer the balance from token owner's account to `to` account
     // - Owner's account must have sufficient balance to transfer
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
+
     function transfer(address to, uint tokens) public returns (bool success) {
         balances[msg.sender] = balances[msg.sender].sub(tokens);
         balances[to] = balances[to].add(tokens);
@@ -85,11 +119,13 @@ contract FixedSupplyToken is ERC20Interface, Owned {
     // recommends that there are no checks for the approval double-spend attack
     // as this should be implemented in user interfaces
     // ------------------------------------------------------------------------
+
     function approve(address spender, uint tokens) public returns (bool success) {
         allowed[msg.sender][spender] = tokens;
         emit Approval(msg.sender, spender, tokens);
         return true;
     }
+
     // ------------------------------------------------------------------------
     // Transfer `tokens` from the `from` account to the `to` account
     // The calling account must already have sufficient tokens approve(...)-d
@@ -98,6 +134,7 @@ contract FixedSupplyToken is ERC20Interface, Owned {
     // - Spender must have sufficient allowance to transfer
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
+
     function transferFrom(address from, address to, uint tokens) public returns (bool success) {
         balances[from] = balances[from].sub(tokens);
         allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
