@@ -77,17 +77,43 @@ contract Exchange is Owned {
     //////////////////////
 
     function addToken(string symbolName, address erc20TokenAddress) onlyOwner {
-
+        require(!hasToken(symbolName));
+        symbolNameIndex++;
+        tokens[symbolNameIndex].symbolName = symbolName;
+        tokens[symbolNameIndex].tokenContract = erc20TokenAddress;
     }
 
     function hasToken(string symbolName) constant returns (bool) {
+      uint8 index = getSymbolIndex(symbolName);
+        if (index == 0) {
+          return false;
+        }
+        return true;
     }
 
 
     function getSymbolIndex(string symbolName) internal returns (uint8) {
+      for(uint8 i = 1; i <= symbolNameIndex; i++){
+        if(stringsEqual(tokens[i].symbolName, symbolName)){
+          return i;
+        }
+      }
+      return 0;
     }
-
-
+    //////////////////////////////////
+    // STRING COMPARISON FUNCTION //
+    //////////////////////////////////
+    function stringsEqual(string storage _a, string memory _b) internal returns (bool) {
+      bytes storage a = bytes(_a);
+      bytes memory b = bytes(_b);
+        if(a.length != b.length)
+          return false;
+      //todo unroll this loop
+        for(uint i = 0; i < a.length; i++)
+          if(a[i] != b[i])
+            return false;
+        return true;
+    }
 
 
     //////////////////////////////////
