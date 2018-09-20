@@ -63,12 +63,19 @@ contract Exchange is Owned {
     // DEPOSIT AND WITHDRAWAL ETHER //
     //////////////////////////////////
     function depositEther() payable {
+      require(balanceEthForAddress[msg.sender] + msg.value >= balanceEthForAddress[msg.sender]);
+      balanceEthForAddress[msg.sender] += msg.value;
     }
 
     function withdrawEther(uint amountInWei) {
+      require(balanceEthForAddress[msg.sender] - amountInWei >= 0);
+      require(balanceEthForAddress[msg.sender] - amountInWei <= balanceEthForAddress[msg.sender]);
+      balanceEthForAddress[msg.sender] -= amountInWei;
+      msg.sender.transfer(amountInWei);
     }
 
     function getEthBalanceInWei() constant returns (uint){
+      return balanceEthForAddress[msg.sender];
     }
 
 
@@ -120,6 +127,7 @@ contract Exchange is Owned {
     // DEPOSIT AND WITHDRAWAL TOKEN //
     //////////////////////////////////
     function depositToken(string symbolName, uint amount) {
+
     }
 
     function withdrawToken(string symbolName, uint amount) {
