@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 import "./Owned.sol";
+import "./FixedSupplyToken.sol";
 
 contract Exchange is Owned {
 
@@ -127,16 +128,36 @@ contract Exchange is Owned {
     // DEPOSIT AND WITHDRAWAL TOKEN //
     //////////////////////////////////
     function depositToken(string symbolName, uint amount) {
+      uint8 symbolNameIndex = getSymbolIndexOrThrow(symbolName);
+      require(tokens[symbolNameIndex].tokenContract != address(0));
+      ERC20Interface token = ERC20Interface(tokens[symbolNameIndex].tokenContract);
+      require(token.transferFrom(msg.sender, address(this), amount) == true);
+      require(tokenBalanceForAddress[msg.sender][symbolNameIndex] + amount >= tokenBalanceForAddress[msg.sender][symbolNameIndex]);
+      tokenBalanceForAddress[msg.sender][symbolNameIndex] += amount;
+
 
     }
 
     function withdrawToken(string symbolName, uint amount) {
+      uint8 symbolNameIndex = getSymbolIndexOrThrow(symbolName);
+      require(tokens[symbolNameIndex].tokenContract != address(0));
+      ERC20Interface token = ERC20Interface(tokens[symbolNameIndex].tokenContract);
+      require(tokenBalanceForAddress[msg.sender][symbolNameIndex] - amount >= 0);
+      require(tokenBalanceForAddress[msg.sender][symbolNameIndex] - amount <= tokenBalanceForAddress[msg.sender][symbolNameIndex]);
+      tokenBalanceForAddress[msg.sender][symbolNameIndex] -= amount;
+      require(token.transfer(msg.sender, amount) == true);
     }
 
     function getBalance(string symbolName) constant returns (uint) {
+      uint8 symbolNameIndex = getSymbolIndexOrThrow(symbolName);
+      return tokenBalanceForAddress[msg.sender][symbolNameIndex];
     }
 
-
+    function getSymbolIndexOrThrow(string symbolName) returns (uint8) {
+      uint8 index = getSymbolIndex(symbolName);
+      require(index > 0);
+      return index;
+    }
 
 
 
