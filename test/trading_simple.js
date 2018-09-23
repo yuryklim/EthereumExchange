@@ -81,4 +81,36 @@ contract('trading_simple', function(accounts) {
             assert.equal(orderBook[1].length, 2, "OrderBook should have 2 sell volume elements");
         });
     });
+
+    it("should be possible to create and cancel a buy order", function () {
+        var myExchangeInstance;
+        var orderBookLengthBeforeBuy, orderBookLengthAfterBuy, orderBookLengthAfterCancel, orderKey;
+        return exchange.deployed().then(function (instance) {
+            myExchangeInstance = instance;
+            return myExchangeInstance.getBuyOrderBook.call("FIXED");
+        }).then(function (orderBook) {
+            orderBookLengthBeforeBuy = orderBook[0].length;
+            return myExchangeInstance.buyToken("FIXED", web3.toWei(2.2, "finney"), 5);
+        }).then(function(txResult) {
+            /**
+             * Assert the logs
+             */
+            assert.equal(txResult.logs.length, 1, "There should have been one Log Message emitted.");
+            assert.equal(txResult.logs[0].event, "LimitBuyOrderCreated", "The Log-Event should be LimitBuyOrderCreated");
+            orderKey = txResult.logs[0].args._orderKey;
+            return myExchangeInstance.getBuyOrderBook.call("FIXED");
+        }).then(function (orderBook) {
+            orderBookLengthAfterBuy = orderBook[0].length;
+            assert.equal(orderBookLengthAfterBuy, orderBookLengthBeforeBuy + 1, "OrderBook should have 1 buy offers more than before");
+            return myExchangeInstance.cancelOrder("FIXED", false, web3.toWei(2, "finney"), orderKey);
+        }).then(function(txResult) {
+            assert.equal(txResult.logs[0].event, "BuyOrderCanceled", "The Log-Event should be BuyOrderCanceled");
+            return myExchangeInstance.getBuyOrderBook.call("FIXED");
+        }).then(function(orderBook) {
+            orderBookLengthAfterCancel = orderBook[0].length;
+            //console.log(orderBook[1][orderBookLengthAfterCancel-1]);
+            assert.equal(orderBookLengthAfterCancel, orderBookLengthAfterBuy, "OrderBook should have 1 buy offers, its not cancelling it out completely, but setting the volume to zero");
+            //assert.equal(orderBook[1][orderBookLengthAfterCancel-1], 0, "The available Volume should be zero");
+        });
+    });
 });
