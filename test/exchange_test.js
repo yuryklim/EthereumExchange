@@ -11,7 +11,9 @@ contract('exchange_test', function(accounts) {
         }).then(function (exchangeInstance) {
             myExchangeInstance = exchangeInstance;
             return myExchangeInstance.addToken("FIXED", myTokenInstance.address);
-        }).then(function () {
+        }).then(function (txResult) {
+            console.log(txResult);
+            assert.equal(txResult.logs[0].event, "TokenAddedToSystem", "TokenAddedToSystem event should be emitted");
             return myExchangeInstance.hasToken.call("FIXED");
         }).then(function (booleanHasToken) {
             assert.equal(booleanHasToken, true, "The Token was not added");
@@ -64,10 +66,13 @@ contract('exchange_test', function(accounts) {
             balanceTokenInTokenBeforeWithdrawal = balanceToken.toNumber();
             return myExchangeInstance.withdrawToken("FIXED", balancedTokenInExchangeBeforeWithdrawal);
         }).then(function(txResult) {
+            console.log(txResult);
+              assert.equal(txResult.logs[0].event, "WithdrawalToken",
+              "WithdrawalToken event should be emitted");
             return myExchangeInstance.getBalance.call("FIXED");
         }).then(function(balanceExchange) {
             balanceTokenInExchangeAfterWithdrawal = balanceExchange.toNumber();
-            return  myTokenInstance.balanceOf.call(accounts[0]);
+            return myTokenInstance.balanceOf.call(accounts[0]);
         }).then(function(balanceToken) {
             balanceTokenInTokenAfterWithdrawal = balanceToken.toNumber();
             assert.equal(balanceTokenInExchangeAfterWithdrawal, 0, "There should be 0 tokens left in the exchange");
