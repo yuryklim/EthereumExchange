@@ -339,20 +339,22 @@ contract Exchange is Owned {
         uint total_amount_ether_necessary = 0;
         uint total_amount_ether_available = 0;
 
-        //if we have enough ether, we can buy that:
-        total_amount_ether_necessary = amount*priceInWei;
-
-        //overflow check
-        require(total_amount_ether_necessary >= amount);
-        require(total_amount_ether_necessary >= priceInWei);
-        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= amount);
-        require(tokenBalanceForAddress[msg.sender][tokenNameIndex] - amount >= 0);
-        require(balanceEthForAddress[msg.sender] + total_amount_ether_necessary >= balanceEthForAddress[msg.sender]);
-
-        //actually subtract the amount of tokens to change it then
-        tokenBalanceForAddress[msg.sender][tokenNameIndex] -= amount;
 
         if (tokens[tokenNameIndex].amountBuyPrices == 0 || tokens[tokenNameIndex].curBuyPrice < priceInWei) {
+
+            //if we have enough ether, we can buy that:
+            total_amount_ether_necessary = amount * priceInWei;
+
+            //overflow check
+            require(total_amount_ether_necessary >= amount);
+            require(total_amount_ether_necessary >= priceInWei);
+            require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= amount);
+            require(tokenBalanceForAddress[msg.sender][tokenNameIndex] - amount >= 0);
+            require(balanceEthForAddress[msg.sender] + total_amount_ether_necessary >= balanceEthForAddress[msg.sender]);
+
+            //actually subtract the amount of tokens to change it then
+            tokenBalanceForAddress[msg.sender][tokenNameIndex] -= amount;
+
             //limit order: we don't have enough offers to fulfill the amount
 
             //add the order to the orderBook
@@ -361,13 +363,16 @@ contract Exchange is Owned {
             LimitSellOrderCreated(tokenNameIndex, msg.sender, amount, priceInWei, tokens[tokenNameIndex].sellBook[priceInWei].offers_length);
 
         } else {
-          //market order: current buy price is bigger or equal to sell price!
+            //market order: current buy price is bigger or equal to sell price!
+
             //1st: find the "highest buy price" that is higher than the sell amount  [buy: 60@5000] [buy: 50@4500] [sell: 500@4000]
             //2: sell up the volume for 5000
             //3: sell up the volume for 4500
             //if still something remaining -> sellToken limit order
+
             //2: sell up the volume
             //2.1 add ether to seller, add symbolName to buyer until offers_key <= offers_length
+
 
             uint whilePrice = tokens[tokenNameIndex].curBuyPrice;
             uint amountNecessary = amount;
@@ -377,11 +382,13 @@ contract Exchange is Owned {
                 while (offers_key <= tokens[tokenNameIndex].buyBook[whilePrice].offers_length && amountNecessary > 0) {//and the first order (FIFO)
                     uint volumeAtPriceFromAddress = tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].amount;
 
+
                     //Two choices from here:
                     //1) one person offers not enough volume to fulfill the market order - we use it up completely and move on to the next person who offers the symbolName
                     //2) else: we make use of parts of what a person is offering - lower his amount, fulfill out order.
                     if (volumeAtPriceFromAddress <= amountNecessary) {
                         total_amount_ether_available = volumeAtPriceFromAddress * whilePrice;
+
 
                         //overflow check
                         require(tokenBalanceForAddress[msg.sender][tokenNameIndex] >= volumeAtPriceFromAddress);
@@ -399,6 +406,7 @@ contract Exchange is Owned {
                         balanceEthForAddress[msg.sender] += total_amount_ether_available;
                         tokens[tokenNameIndex].buyBook[whilePrice].offers_key++;
                         SellOrderFulfilled(tokenNameIndex, volumeAtPriceFromAddress, whilePrice, offers_key);
+
 
                         amountNecessary -= volumeAtPriceFromAddress;
                     } else {
@@ -433,6 +441,7 @@ contract Exchange is Owned {
                     offers_key == tokens[tokenNameIndex].buyBook[whilePrice].offers_length &&
                     tokens[tokenNameIndex].buyBook[whilePrice].offers[offers_key].amount == 0
                     ) {
+
                         tokens[tokenNameIndex].amountBuyPrices--;
                         //we have one price offer less here...
                         //next whilePrice
@@ -456,10 +465,9 @@ contract Exchange is Owned {
                 sellToken(symbolName, priceInWei, amountNecessary);
                 //add a limit order, we couldn't fulfill all the orders!
             }
+
         }
     }
-
-
 
     ///////////////////////////
     // ASK LIMIT ORDER LOGIC //
